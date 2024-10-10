@@ -1,0 +1,44 @@
+version: '3.8'
+
+services:
+   db:
+     image: mysql:8.0
+     volumes:
+       - ./mysql:/var/lib/mysql
+     restart: always
+     environment:
+       MYSQL_ROOT_PASSWORD: ${MYSQL_DATABASE_PASSWORD}
+       MYSQL_DATABASE: wordpress
+       MYSQL_USER: ${MYSQL_USER}
+       MYSQL_PASSWORD: ${MYSQL_USER_PASSWORD}
+     ports:
+      - 33061:3306
+   wordpress:
+     depends_on:
+       - db
+     image: wordpress:latest
+     ports:
+      - 80:80
+      - 443:443
+     restart: always
+     volumes:
+       - ./.docker/uploads.ini:/usr/local/etc/php/conf.d/uploads.ini
+       - ./wordpress/wp-content:/var/www/html/wp-content
+     environment:
+       WORDPRESS_DB_HOST: db:3306
+       WORDPRESS_DB_NAME: wordpress
+       WORDPRESS_DB_USER: ${MYSQL_USER}
+       WORDPRESS_DB_PASSWORD: ${MYSQL_USER_PASSWORD}
+   phpmyadmin:
+    depends_on:
+      - db
+    image: phpmyadmin/phpmyadmin:latest
+    restart: always
+    ports:
+      - 8008:80
+      - 8443:443
+    environment:
+      PMA_HOST: db
+      MYSQL_ROOT_PASSWORD: ${MYSQL_DATABASE_PASSWORD}
+    volumes:
+      - /sessions
