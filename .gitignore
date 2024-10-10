@@ -1,1 +1,8 @@
-./.venv/
+venv/
+.venv/
+env/
+venv.bak/
+env.bak/
+__pycache__/
+assets/
+*.html
