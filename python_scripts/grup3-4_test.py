@@ -43,13 +43,21 @@ class AacWebsiteTest(unittest.TestCase):
             result = elem.text
             self.assertEqual(result, "Por favor, introduce una dirección de correo electrónico válida.")
 
+            print(result)
+
+            # Cal donar clic al botó d'enviar formulari? No, però per si de cas es trenca alguna funcionalitat després.
+            submit_button = driver.find_element(By.ID, "wpforms-submit-30")
+            driver.execute_script("arguments[0].scrollIntoView();", submit_button)
+            time.sleep(1)
+            submit_button.click()
+
             # Comprovar si encara seguim a la pàgina del formulari de contacte.
             self.assertEqual(driver.current_url, contact_form_url)
         except AttributeError as e:
             print(f"AttributeError {e}")
         except Exception as e:
             print(f"Exception {e}")
-
+    
     def test_meta_tag_description_erick(self):
         try:
             # url = "http://192.168.20.11"
@@ -199,6 +207,27 @@ class AacWebsiteTest(unittest.TestCase):
         except Exception as e:
             print(f"Exception {e}")
 
+    def test_comprovarqueelformularinosenviasielcorreuestabuit_sergi(self):
+        try:
+            self.driver.get("http://www.aac.com/contacte/")
+            # self.driver.set_window_size(1920, 1070)
+            self.driver.find_element(By.TAG_NAME, "body").send_keys(Keys.END)
+            time.sleep(1)
+            self.driver.find_element(By.ID, "wpforms-30-field_1").click()
+            self.driver.find_element(By.ID, "wpforms-30-field_1").send_keys("usuari")
+            self.driver.find_element(By.TAG_NAME, "body").send_keys(Keys.END)
+            self.driver.find_element(By.ID, "wpforms-30-field_3").click()
+            self.driver.find_element(By.ID, "wpforms-30-field_3").send_keys("missatge")
+            submit_button = self.driver.find_element(By.ID, "wpforms-submit-30")
+            self.driver.execute_script("arguments[0].scrollIntoView();", submit_button)
+            time.sleep(1)
+            submit_button.click()
+            assert self.driver.find_element(By.ID, "wpforms-30-field_2-error").text == "Este campo es obligatorio."
+        except AttributeError as e:
+            print(f"AttributeError {e}")
+        except Exception as e:
+            print(f"Exception {e}")
+    
     def tearDown(self):
         try:
             self.driver.close()
