@@ -1,7 +1,7 @@
-# Tests Web AAC
-Repositori dels tests fets pels membres dels grups 3 i 4 per al 1er sprint.
+# Web AAC
+Repositori de l'arxiu docker-compose.yml usat per crear els containers del projecte (MySQL, PHPMyAdmin i Wordpress) i dels tests fets pels membres per al 1er sprint.
 
-## Instal·lació
+## Instal·lació batería proves
 1. Baixar-se el repo (cal tenir configurat SSH a Github).
 2. Entrar a la carpeta python_scripts.
 ```bash
@@ -17,8 +17,8 @@ python -m venv ./venv
 ./venv/bin/python -m pip install -r requirements.txt
 ```
 
-## Execució
-Executar test individual
+## Execució proves
+Executar prova individual
 ```bash
 ./venv/bin/python -m pytest -k nom_funcio_test
 ```
