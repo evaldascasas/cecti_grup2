@@ -41,14 +41,15 @@ class AacWebsiteTest(unittest.TestCase):
                 EC.presence_of_element_located((By.ID, "wpforms-30-field_2-error"))
             )
             result = elem.text
-            self.assertEqual(result, "Por favor, introduce una dirección de correo electrónico válida.")
+            self.assertEqual(result, "Por favor, introduce una dirección de correo electrónico válida.", "El text del missatge d'error i el que s'ha seleccionat a l'element no són el mateix.")
 
             print(result)
 
             # Cal donar clic al botó d'enviar formulari? No, però per si de cas es trenca alguna funcionalitat després.
             submit_button = driver.find_element(By.ID, "wpforms-submit-30")
             driver.execute_script("arguments[0].scrollIntoView();", submit_button)
-            time.sleep(1)
+            #driver.implicitly_wait(2)
+            WebDriverWait(driver, 2)
             submit_button.click()
 
             # Comprovar si encara seguim a la pàgina del formulari de contacte.
@@ -182,8 +183,11 @@ class AacWebsiteTest(unittest.TestCase):
             
             result_element = driver.find_element(By.XPATH, '//p[text()="¡Gracias por contactar con nosotros! Nos pondremos en contacto contigo muy pronto."]')
             result_text = result_element.text
-            
-            assert result_text == "¡Gracias por contactar con nosotros! Nos pondremos en contacto contigo muy pronto.", f"Error: el texto encontrado es '{result_text}'"
+
+            if result_element:
+                assert result_text == "¡Gracias por contactar con nosotros! Nos pondremos en contacto contigo muy pronto.", f"Error: el texto encontrado es '{result_text}'"
+            else:
+                print("TUS MUERTOS")
             # driver.quit()
         except AttributeError as e:
             print(f"AttributeError {e}")
@@ -206,7 +210,7 @@ class AacWebsiteTest(unittest.TestCase):
             print(f"AttributeError {e}")
         except Exception as e:
             print(f"Exception {e}")
-
+    '''
     def test_comprovarqueelformularinosenviasielcorreuestabuit_sergi(self):
         try:
             self.driver.get("http://www.aac.com/contacte/")
@@ -227,7 +231,45 @@ class AacWebsiteTest(unittest.TestCase):
             print(f"AttributeError {e}")
         except Exception as e:
             print(f"Exception {e}")
-    
+    '''
+    def test_comprovarqueelformularinosenviasielcorreuestabuit_sergi(self):       #El metode de proba en questio
+        self.driver.get("http://www.aac.com/contacte/")             #Obri la pagina a la que fara el test
+        self.driver.set_window_size(1280, 720)              #Determina la mida de la pagina
+
+        # Espera un maxim de 10 segons a que l'element del camp de nom sigui visible, despres escroleija fins que sigui visible a la pantalla
+        element_nom = WebDriverWait(self.driver, 10).until(
+            EC.visibility_of_element_located((By.ID, "wpforms-30-field_1"))
+        )
+        self.driver.execute_script("arguments[0].scrollIntoView();", element_nom)
+        # Un cop l'elelment esta en pantalla, li fa clic i li envia un valor escrit "usuari"
+        time.sleep(1) # si no es posa aquest sleep, peten els events click(), ni implicit_wait ni WebDriverWait(driver, 1) funcionen¿?
+        element_nom.click()
+        element_nom.send_keys("usuari")
+
+        # Espera un maxim de 10 segons a que l'element del camp de missatge sigui visible, despres escroleija fins que sigui visible a la pantalla
+        element_missatge = WebDriverWait(self.driver, 10).until(
+            EC.visibility_of_element_located((By.ID, "wpforms-30-field_3"))
+        )
+        self.driver.execute_script("arguments[0].scrollIntoView();", element_missatge)
+        # Un cop l'elelment esta en pantalla, li fa clic i li envia un valor escrit "missatge"
+        element_missatge.click()
+        element_missatge.send_keys("missatge")
+
+        # Espera que el boto d'enviar sigui visible, i despres fa scroll.
+        element_enviar = WebDriverWait(self.driver, 10).until(
+            EC.visibility_of_element_located((By.ID, "wpforms-submit-30"))
+        )
+        self.driver.execute_script("arguments[0].scrollIntoView();", element_enviar)
+        # Ara que es visible li fa clic
+        element_enviar.click()
+
+        # Espera que aparegui l'error de camp obligatori i verifica que es visible.
+        error_element = WebDriverWait(self.driver, 10).until(
+            EC.visibility_of_element_located((By.ID, "wpforms-30-field_2-error"))
+        )
+        assert error_element.text == "Este campo es obligatorio."
+
+
     def tearDown(self):
         try:
             self.driver.close()
