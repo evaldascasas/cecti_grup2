@@ -251,6 +251,7 @@ class AacWebsiteTest(unittest.TestCase):
             EC.visibility_of_element_located((By.ID, "wpforms-30-field_3"))
         )
         self.driver.execute_script("arguments[0].scrollIntoView();", element_missatge)
+        time.sleep(1) # si no es posa aquest sleep, peten els events click(), ni implicit_wait ni WebDriverWait(driver, 1) funcionen¿?
         # Un cop l'elelment esta en pantalla, li fa clic i li envia un valor escrit "missatge"
         element_missatge.click()
         element_missatge.send_keys("missatge")
@@ -260,6 +261,7 @@ class AacWebsiteTest(unittest.TestCase):
             EC.visibility_of_element_located((By.ID, "wpforms-submit-30"))
         )
         self.driver.execute_script("arguments[0].scrollIntoView();", element_enviar)
+        time.sleep(1) # si no es posa aquest sleep, peten els events click(), ni implicit_wait ni WebDriverWait(driver, 1) funcionen¿?
         # Ara que es visible li fa clic
         element_enviar.click()
 
