@@ -1,35 +1,39 @@
 version: '3.8'
 
 services:
-   db:
-     image: mysql:8.0
-     volumes:
-       - ./mysql:/var/lib/mysql
-     restart: always
-     environment:
-       MYSQL_ROOT_PASSWORD: ${MYSQL_DATABASE_PASSWORD}
-       MYSQL_DATABASE: wordpress
-       MYSQL_USER: ${MYSQL_USER}
-       MYSQL_PASSWORD: ${MYSQL_USER_PASSWORD}
-     ports:
+  db:
+    image: mysql:8.0
+    volumes:
+      - ./mysql:/var/lib/mysql
+    restart: always
+    environment:
+      #       MYSQL_ROOT_USER: root
+      #       MYSQL_ROOT_HOST: "%"
+      MYSQL_ROOT_PASSWORD: ${MYSQL_DATABASE_PASSWORD}
+      #       "MYSQL_RANDOM_ROOT_PASSWORD": "yes"
+      MYSQL_DATABASE: wordpress
+      MYSQL_USER: ${MYSQL_USER}
+      MYSQL_PASSWORD: ${MYSQL_USER_PASSWORD}
+    ports:
       - 33061:3306
-   wordpress:
-     depends_on:
-       - db
-     image: wordpress:latest
-     ports:
+  wordpress:
+    depends_on:
+      - db
+      - modsec2-apache
+    image: wordpress:latest
+    ports:
       - 80:80
       - 443:443
-     restart: always
-     volumes:
-       - ./.docker/uploads.ini:/usr/local/etc/php/conf.d/uploads.ini
-       - ./wordpress/wp-content:/var/www/html/wp-content
-     environment:
-       WORDPRESS_DB_HOST: db:3306
-       WORDPRESS_DB_NAME: wordpress
-       WORDPRESS_DB_USER: ${MYSQL_USER}
-       WORDPRESS_DB_PASSWORD: ${MYSQL_USER_PASSWORD}
-   phpmyadmin:
+    restart: always
+    volumes:
+      - ./.docker/uploads.ini:/usr/local/etc/php/conf.d/uploads.ini
+      - ./wordpress/wp-content:/var/www/html/wp-content
+    environment:
+      WORDPRESS_DB_HOST: db:3306
+      WORDPRESS_DB_NAME: wordpress
+      WORDPRESS_DB_USER: ${MYSQL_USER}
+      WORDPRESS_DB_PASSWORD: ${MYSQL_USER_PASSWORD}
+  phpmyadmin:
     depends_on:
       - db
     image: phpmyadmin/phpmyadmin:latest
@@ -42,3 +46,33 @@ services:
       MYSQL_ROOT_PASSWORD: ${MYSQL_DATABASE_PASSWORD}
     volumes:
       - /sessions
+  modsec2-apache:
+    image: owasp/modsecurity-crs:apache
+    restart: always
+    environment:
+      SERVERNAME: modsec2-apache
+      BACKEND: http://192.168.20.99:80
+      PORT: 8080
+      MODSEC_RULE_ENGINE: "On" #default: DetectionOnly
+      # MANUAL_MODE: 1
+      BLOCKING_PARANOIA: 1
+      DETECTION_PARANOIA: 2
+      TZ: ${TZ}
+      ERRORLOG: "/var/log/error.log"
+      ACCESSLOG: "/var/log/access.log"
+      MODSEC_AUDIT_LOG_FORMAT: Native
+      MODSEC_AUDIT_LOG_TYPE: Serial
+      MODSEC_AUDIT_LOG: "/var/log/modsec_audit.log"
+      MODSEC_TMP_DIR: "/tmp"
+      MODSEC_RESP_BODY_ACCESS: "On"
+      MODSEC_RESP_BODY_MIMETYPE: "text/plain text/html text/xml application/json"
+      COMBINED_FILE_SIZES: "65535"
+#    volumes:
+#      - ./modsecurity/REQUEST-900-EXCLUSION-RULES-BEFORE-CRS.conf:/etc/modsecurity.d/owasp-crs/rules/REQUEST-900-EXCLUSION-RULES-BEFORE-CRS.conf
+#      - ./modsecurity/RESPONSE-999-EXCLUSION-RULES-AFTER-CRS.conf:/etc/modsecurity.d/owasp-crs/rules/RESPONSE-999-EXCLUSION-RULES-AFTER-CRS.conf
+#      - ./modsecurity/crs-setup.conf:/etc/modsecurity.d/owasp-crs/crs-setup.conf
+    #      - ./modsecurity/error.log:/var/log/error.log
+    #      - ./modsecurity/access.log:/var/log/access.log
+    #      - ./modsecurity/modsec_audit.log:/var/log/modsec_audit.log
+    ports:
+      - 8080:8080
